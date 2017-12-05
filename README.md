@@ -14,6 +14,8 @@ Developers:
 ```bash
 $ cd {your_source_code_folder}
 $ git clone git@github.com:tsrnd/goweb5.git goweb5
+$ cd goweb5
+$ cp .env.example .env
 $ docker-compose up
 ```
 Then you can open the frontend at localhost:5001, admin localhost:5002 at  and the RESTful GoLang API at localhost:5000
