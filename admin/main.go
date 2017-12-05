@@ -2,27 +2,32 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	setCors(w)
-	fmt.Fprintf(w, "Goweb5. This is the admin system")
-}
-
-func setCors(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5002")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+func login(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("method:", r.Method) //get request method
+	if r.Method == "GET" {
+		t, _ := template.ParseFiles("login.html")
+		t.Execute(w, nil)
+		fmt.Println("username:", r.Form["username"])
+		fmt.Println("password:", r.Form["password"])
+	} else {
+		r.ParseForm()
+		// logic part of log in
+		fmt.Println("username:", r.Form["username"])
+		fmt.Println("password:", r.Form["password"])
+	}
 }
 
 func main() {
-
-	// add router and routes
-	router := httprouter.New()
-	router.GET("/", indexHandler)
-
-	http.ListenAndServe(":8081", router)
+	// setting router rule
+	http.HandleFunc("/", login)
+	// setting listening port
+	err := http.ListenAndServe(":8081", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
