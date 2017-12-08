@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -9,7 +10,8 @@ import (
 
 func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	setCors(w)
-	fmt.Fprintf(w, "Goweb5. This is the frontend system")
+	body, _ := ioutil.ReadFile("view/layout.html")
+	fmt.Fprintf(w, string(body))
 }
 
 func setCors(w http.ResponseWriter) {
@@ -25,4 +27,10 @@ func main() {
 	router.GET("/", indexHandler)
 
 	http.ListenAndServe(":8082", router)
+
+	// server := http.Server{
+	// 	Addr: "127.0.0.1:8082",
+	// }
+	// http.HandleFunc("/", indexHandler)
+	// server.ListenAndServe()
 }
