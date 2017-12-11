@@ -12,6 +12,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Fprintf(w, "Goweb5. This is the frontend system")
 }
 
+// func testHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+// 	setCors(w)
+// 	fmt.Fprint(w, "Hello world")
+// }
+
 func setCors(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5001")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST, DELETE")
