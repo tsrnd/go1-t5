@@ -8,8 +8,11 @@ ENV APP_ENV $app_env
 
 # it is okay to leave user/goweb5 as long as you do not want to share code with other libraries
 COPY . /go/src/github.com/user/goweb5/frontend
-WORKDIR /go/src/github.com/user/goweb5/frontend
-
+WORKDIR /go/src
+RUN go get github.com/lib/pq
+WORKDIR /go/src/github.com/user/goweb5/frontend/data
+RUN go install
+WORKDIR /go/src/github.com/user/goweb5/frontend/
 RUN go get ./
 RUN go build
 

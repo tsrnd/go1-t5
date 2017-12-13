@@ -1,36 +1,34 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
+	"time"
 )
-
-func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	setCors(w)
-	body, _ := ioutil.ReadFile("view/layout.html")
-	fmt.Fprintf(w, string(body))
-}
-
-func setCors(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5001")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-}
 
 func main() {
 
-	// add router and routes
-	router := httprouter.New()
-	router.GET("/", indexHandler)
+	p("ChitChat", version(), "started at", config.Address)
 
-	http.ListenAndServe(":8082", router)
+	// handle static assets
+	mux := http.NewServeMux()
+	files := http.FileServer(http.Dir(config.Static))
+	mux.Handle("/static/", http.StripPrefix("/static/", files))
 
-	// server := http.Server{
-	// 	Addr: "127.0.0.1:8082",
-	// }
-	// http.HandleFunc("/", indexHandler)
-	// server.ListenAndServe()
+	//
+	// all route patterns matched here
+	// route handler functions defined in other files
+	//
+
+	// index
+	mux.HandleFunc("/", index)
+
+	// starting up the server
+	server := &http.Server{
+		Addr:           config.Address,
+		Handler:        mux,
+		ReadTimeout:    time.Duration(config.ReadTimeout * int64(time.Second)),
+		WriteTimeout:   time.Duration(config.WriteTimeout * int64(time.Second)),
+		MaxHeaderBytes: 1 << 20,
+	}
+	server.ListenAndServe()
 }
