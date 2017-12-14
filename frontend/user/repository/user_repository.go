@@ -21,7 +21,7 @@ type UserRepository interface {
 	DeleteByUUID(UUID string) (err error)
 	User(userID int) (*model.User, error)
 	SessionDeleteAll() (err error)
-	Create(name string, email string, password string) (err error)
+	Create(name string, email string, password string) (int, error)
 	Delete(id int) (err error)
 	Update(id int, name string, email string) (err error)
 	UserDeleteAll() (err error)
@@ -188,4 +188,8 @@ func createUUID() (uuid string) {
 	u[6] = (u[6] & 0xF) | (0x4 << 4)
 	uuid = fmt.Sprintf("%x-%x-%x-%x-%x", u[0:4], u[4:6], u[6:8], u[8:10], u[10:])
 	return
+}
+
+func NewUserRepository(db *sql.DB) UserRepository {
+	return &userRepository{db}
 }

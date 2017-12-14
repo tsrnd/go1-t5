@@ -5,11 +5,17 @@ import (
 	"log"
 	"os"
 
-	db "github.com/tsrnd/go-clean-arch/services/database/sql"
+	"github.com/joho/godotenv"
+	db "github.com/tsrnd/goweb5/frontend/services/database/sql"
 )
 
 // DB func
 func DB() *sql.DB {
+	err := godotenv.Load()
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	dbDlct := os.Getenv("DATABASE_DLCT")
 	dbUser := os.Getenv("DATABASE_USER")
 	dbPass := os.Getenv("DATABASE_PASS")

@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/tsrnd/go-clean-arch/services/cache"
+	"github.com/tsrnd/goweb5/frontend/services/cache"
 )
 
 // Redis struct

@@ -1,13 +1,13 @@
 package usecase
 
 import (
-	repos "github.com/tsrnd/go-clean-arch/user/repository"
+	repos "github.com/tsrnd/goweb5/frontend/thread/repository"
 )
 
-// UserUsecase interface
-type UserUsecase interface {
+// ThreadUsecase interface
+type ThreadUsecase interface {
 }
 
-type userUsecase struct {
-	userRepos repos.UserRepository
+type threadUsecase struct {
+	threadRepos repos.ThreadRepository
 }
