@@ -1,28 +1,18 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/tsrnd/goweb5/frontend/config"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	setCors(w)
-	fmt.Fprintf(w, "Goweb5. This is the frontend system")
-}
-
-func setCors(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5001")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-}
-
 func main() {
-
-	// add router and routes
-	router := httprouter.New()
-	router.GET("/", indexHandler)
-
-	http.ListenAndServe(":8082", router)
+	db := config.DB()
+	cache := config.Cache()
+	router := config.Router(db, cache)
+	port := config.Port()
+	if err := http.ListenAndServe(p, r); err != nil {
+		log.Fatal(err)
+	}
 }
