@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/user/goweb5/frontend/data"
 )
 
@@ -48,26 +49,33 @@ func writeLog(h http.HandlerFunc) http.HandlerFunc {
 		h(w, r)
 	}
 }
+func logHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		msg := fmt.Sprintf("HandlerFunc dd - %v\n", runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name())
+		info(msg)
+		h.ServeHTTP(w, r)
+	})
+}
 
 func main() {
-	mux := http.NewServeMux()
+	r := chi.NewRouter()
 	files := http.FileServer(http.Dir(config.Static))
-	mux.Handle("/static/", http.StripPrefix("/static/", files))
-	mux.HandleFunc("/", writeLog(indexHandler))
-	mux.HandleFunc("/err", errHandler)
-	mux.HandleFunc("/login", login)
-	mux.HandleFunc("/authenticate", authenticate)
-	mux.HandleFunc("/signup", signup)
-	mux.HandleFunc("/register", signupAccount)
-	mux.HandleFunc("/logout", logout)
-	mux.HandleFunc("/thread/new", protect(writeLog(newThread)))
-	mux.HandleFunc("/thread/create", protect(writeLog(createThread)))
-	mux.HandleFunc("/thread/post", protect(writeLog(postThread)))
-	mux.HandleFunc("/thread/read", writeLog(readThread))
+	r.Handle("/static/*", logHandler(http.StripPrefix("/static/", files)))
+	r.Get("/", writeLog(indexHandler))
+	r.Get("/err", errHandler)
+	r.Get("/login", login)
+	r.Post("/authenticate", authenticate)
+	r.Get("/signup", signup)
+	r.Post("/register", signupAccount)
+	r.Post("/logout", logout)
+	r.Get("/thread/new", protect(writeLog(newThread)))
+	r.Post("/thread/create", protect(writeLog(createThread)))
+	r.Post("/thread/post", protect(writeLog(postThread)))
+	r.Get("/thread/read", writeLog(readThread))
 
 	server := &http.Server{
 		Addr:           config.Address,
-		Handler:        mux,
+		Handler:        r,
 		ReadTimeout:    time.Duration(config.ReadTimeout * int64(time.Second)),
 		WriteTimeout:   time.Duration(config.WriteTimeout * int64(time.Second)),
 		MaxHeaderBytes: 1 << 20,
