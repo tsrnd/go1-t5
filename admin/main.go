@@ -1,33 +1,34 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
-	"log"
 	"net/http"
+	"path/filepath"
 )
 
-func login(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("method:", r.Method) //get request method
-	if r.Method == "GET" {
-		t, _ := template.ParseFiles("login.html")
-		t.Execute(w, nil)
-		fmt.Println("username:", r.Form["username"])
-		fmt.Println("password:", r.Form["password"])
-	} else {
-		r.ParseForm()
-		// logic part of log in
-		fmt.Println("username:", r.Form["username"])
-		fmt.Println("password:", r.Form["password"])
-	}
-}
+var LayoutDir string = "views/layouts"
+var index *template.Template
 
 func main() {
-	// setting router rule
-	http.HandleFunc("/", login)
-	// setting listening port
-	err := http.ListenAndServe(":8081", nil)
+	var err error
+	files := append(layoutFiles(), "views/index.gohtml")
+	index, err = template.ParseFiles(files...)
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+		panic(err)
 	}
+
+	http.HandleFunc("/", handler)
+	http.ListenAndServe(":8081", nil)
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	index.ExecuteTemplate(w, "bootstrap", nil)
+}
+
+func layoutFiles() []string {
+	files, err := filepath.Glob(LayoutDir + "/*.gohtml")
+	if err != nil {
+		panic(err)
+	}
+	return files
 }
