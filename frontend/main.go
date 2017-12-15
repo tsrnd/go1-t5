@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"reflect"
+	"runtime"
 	"time"
 
 	"github.com/user/goweb5/frontend/data"
@@ -25,8 +28,24 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			generateHTML(w, threads, "layout", "public.navbar", "index")
 		} else {
-			generateHTML(w, threads, "index", "layout", "private.navbar")
+			generateHTML(w, threads, "layout", "private.navbar", "index")
 		}
+	}
+}
+func protect(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := session(w, r)
+		if err != nil {
+			http.Redirect(w, r, "/login", 302)
+		}
+		h(w, r)
+	}
+}
+func writeLog(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		msg := fmt.Sprintf("HandlerFunc called - %v\n", runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name())
+		info(msg)
+		h(w, r)
 	}
 }
 
@@ -34,17 +53,17 @@ func main() {
 	mux := http.NewServeMux()
 	files := http.FileServer(http.Dir(config.Static))
 	mux.Handle("/static/", http.StripPrefix("/static/", files))
-	mux.HandleFunc("/", indexHandler)
+	mux.HandleFunc("/", writeLog(indexHandler))
 	mux.HandleFunc("/err", errHandler)
 	mux.HandleFunc("/login", login)
 	mux.HandleFunc("/authenticate", authenticate)
 	mux.HandleFunc("/signup", signup)
 	mux.HandleFunc("/register", signupAccount)
 	mux.HandleFunc("/logout", logout)
-	mux.HandleFunc("/thread/new", newThread)
-	mux.HandleFunc("/thread/create", createThread)
-	mux.HandleFunc("/thread/post", postThread)
-	mux.HandleFunc("/thread/read", readThread)
+	mux.HandleFunc("/thread/new", protect(writeLog(newThread)))
+	mux.HandleFunc("/thread/create", protect(writeLog(createThread)))
+	mux.HandleFunc("/thread/post", protect(writeLog(postThread)))
+	mux.HandleFunc("/thread/read", writeLog(readThread))
 
 	server := &http.Server{
 		Addr:           config.Address,
@@ -54,5 +73,5 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	server.ListenAndServe()
+	server.ListenAndServeTLS("chapter2/gencert/cert.pem", "chapter2/gencert/key.pem")
 }

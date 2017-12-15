@@ -8,30 +8,22 @@ import (
 )
 
 func newThread(w http.ResponseWriter, r *http.Request) {
-	_, err := session(w, r)
-	if err != nil {
-		http.Redirect(w, r, "/login", 302)
-	}
-	generateHTML(w, nil, "layout", "private.navbar", "new.thread")
+	generateHTML(w, nil, "layout", "public.navbar", "new.thread")
 }
 func createThread(w http.ResponseWriter, r *http.Request) {
-	sess, err := session(w, r)
+	sess, _ := session(w, r)
+	err := r.ParseForm()
 	if err != nil {
-		http.Redirect(w, r, "/login", 302)
-	} else {
-		err = r.ParseForm()
-		if err != nil {
-			danger(err, "Cannot parse form")
-		}
-		user, err := sess.User()
-		if err != nil {
-			danger(err, "Cannot get user from session")
-		}
-		if _, err = user.CreateThread(r.PostFormValue("topic")); err != nil {
-			danger(err, "Cannot create thread")
-		}
-		http.Redirect(w, r, "/", 302)
+		danger(err, "Cannot parse form")
 	}
+	user, err := sess.User()
+	if err != nil {
+		danger(err, "Cannot get user from session")
+	}
+	if _, err = user.CreateThread(r.PostFormValue("topic")); err != nil {
+		danger(err, "Cannot create thread")
+	}
+	http.Redirect(w, r, "/", 302)
 }
 func readThread(w http.ResponseWriter, r *http.Request) {
 	vals := r.URL.Query()
@@ -48,11 +40,8 @@ func readThread(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func postThread(w http.ResponseWriter, r *http.Request) {
-	sess, err := session(w, r)
-	if err != nil {
-		http.Redirect(w, r, "/login", 302)
-	}
-	err = r.ParseForm()
+	sess, _ := session(w, r)
+	err := r.ParseForm()
 	if err != nil {
 		danger(err, "Cannot parse form")
 	}
