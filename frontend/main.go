@@ -1,28 +1,45 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-
-	"github.com/julienschmidt/httprouter"
+  "net/http"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	setCors(w)
-	fmt.Fprintf(w, "Goweb5. This is the frontend system")
-}
-
-func setCors(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5001")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-}
-
 func main() {
+  // handle static assets
+  mux := http.NewServeMux()
+  files := http.FileServer(http.Dir("public"))
+  mux.Handle("/static/", http.StripPrefix("/static/", files))
 
-	// add router and routes
-	router := httprouter.New()
-	router.GET("/", indexHandler)
+  //
+  // all route patterns matched here
+  // route handler functions defined in other files
+  //
 
-	http.ListenAndServe(":8082", router)
+  // index
+  mux.HandleFunc("/", index)
+  // error
+
+  // defined in route_auth.go
+  mux.HandleFunc("/login", login)
+  mux.HandleFunc("/logout", logout)
+  mux.HandleFunc("/signup", signup)
+  mux.HandleFunc("/signup_account", signupAccount)
+  mux.HandleFunc("/authenticate", authenticate)
+
+  // update user
+  mux.HandleFunc("/update/", showUpdate)
+  mux.HandleFunc("/update", Update)
+
+  // defined in route-thread.go
+  mux.HandleFunc("/thread/new", newThread)
+  mux.HandleFunc("/thread/read", readThread)
+  mux.HandleFunc("/thread/delete", deleteThread)
+  mux.HandleFunc("/post/create", postThread)
+  
+  // starting up the server
+  server := &http.Server{
+    Addr:           "127.0.0.1:8080",
+    Handler:        mux,
+  }
+  server.ListenAndServe()
 }
