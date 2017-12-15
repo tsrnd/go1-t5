@@ -22,7 +22,7 @@ func DB() *sql.DB {
 	dbHost := os.Getenv("DATABASE_HOST")
 	dbPort := os.Getenv("DATABASE_PORT")
 	dbName := os.Getenv("DATABASE_NAME")
-	db, err := db.Connect(dbDlct, dbUser, dbPass, dbHost, dbPort, dbName)
+	db, err := db.Connect(dbDlct, dbUser, dbPass, dbName, dbHost, dbPort)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,11 +1,10 @@
 package repository
 
 import (
-	"crypto/rand"
 	"database/sql"
-	"fmt"
-	"log"
 	"time"
+
+	"github.com/tsrnd/goweb5/frontend/services/util"
 
 	"github.com/tsrnd/goweb5/frontend/services/crypto"
 	model "github.com/tsrnd/goweb5/frontend/user"
@@ -48,7 +47,7 @@ func (m *userRepository) CreateSession(email string, id int) (session *model.Ses
 	}
 	defer stmt.Close()
 	// use QueryRow to return a row and scan the returned id into the Session struct
-	err = stmt.QueryRow(createUUID(), email, id, time.Now()).Scan(&session.Id, &session.Uuid, &session.Email, &session.UserId, &session.CreatedAt)
+	err = stmt.QueryRow(utils.CreateUUID(), email, id, time.Now()).Scan(&session.Id, &session.Uuid, &session.Email, &session.UserId, &session.CreatedAt)
 	return
 }
 
@@ -108,7 +107,7 @@ func (m *userRepository) Create(name string, email string, password string) (int
 	defer stmt.Close()
 	var id int
 	// use QueryRow to return a row and scan the returned id into the User struct
-	err = stmt.QueryRow(createUUID(), name, email, crypto.HashPassword(password, SALT), time.Now()).Scan(&id)
+	err = stmt.QueryRow(utils.CreateUUID(), name, email, crypto.HashPassword(password, SALT), time.Now()).Scan(&id)
 	return id, err
 }
 
@@ -172,22 +171,6 @@ func (m *userRepository) UserByUUID(uuid string) (*model.User, error) {
 	err := m.DB.QueryRow("SELECT id, uuid, name, email, password, created_at FROM users WHERE uuid = $1", uuid).
 		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
 	return &user, err
-}
-
-func createUUID() (uuid string) {
-	u := new([16]byte)
-	_, err := rand.Read(u[:])
-	if err != nil {
-		log.Fatalln("Cannot generate UUID", err)
-	}
-
-	// 0x40 is reserved variant from RFC 4122
-	u[8] = (u[8] | 0x40) & 0x7F
-	// Set the four most significant bits (bits 12 through 15) of the
-	// time_hi_and_version field to the 4-bit version number.
-	u[6] = (u[6] & 0xF) | (0x4 << 4)
-	uuid = fmt.Sprintf("%x-%x-%x-%x-%x", u[0:4], u[4:6], u[6:8], u[8:10], u[10:])
-	return
 }
 
 func NewUserRepository(db *sql.DB) UserRepository {
