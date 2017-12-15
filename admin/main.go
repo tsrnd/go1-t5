@@ -1,28 +1,34 @@
 package main
 
 import (
-	"fmt"
+	"html/template"
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
+	"path/filepath"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	setCors(w)
-	fmt.Fprintf(w, "Goweb5. This is the admin system")
-}
-
-func setCors(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5002")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-}
+var LayoutDir string = "views/layouts"
+var index *template.Template
 
 func main() {
+	var err error
+	files := append(layoutFiles(), "views/index.gohtml")
+	index, err = template.ParseFiles(files...)
+	if err != nil {
+		panic(err)
+	}
 
-	// add router and routes
-	router := httprouter.New()
-	router.GET("/", indexHandler)
+	http.HandleFunc("/", handler)
+	http.ListenAndServe(":8081", nil)
+}
 
-	http.ListenAndServe(":8081", router)
+func handler(w http.ResponseWriter, r *http.Request) {
+	index.ExecuteTemplate(w, "bootstrap", nil)
+}
+
+func layoutFiles() []string {
+	files, err := filepath.Glob(LayoutDir + "/*.gohtml")
+	if err != nil {
+		panic(err)
+	}
+	return files
 }
