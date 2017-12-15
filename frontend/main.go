@@ -1,33 +1,51 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
+	"time"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	setCors(w)
-	fmt.Fprintf(w, "Goweb5. This is the frontend system")
-}
-
-// func testHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-// 	setCors(w)
-// 	fmt.Fprint(w, "Hello world")
-// }
-
-func setCors(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5001")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-}
-
 func main() {
+	p("ChitChat", version(), "started at", config.Address)
 
-	// add router and routes
-	router := httprouter.New()
-	router.GET("/", indexHandler)
+	// handle static assets
+	mux := http.NewServeMux()
+	files := http.FileServer(http.Dir(config.Static))
+	mux.Handle("/static/", http.StripPrefix("/static/", files))
 
-	http.ListenAndServe(":8082", router)
+	//
+	// all route patterns matched here
+	// route handler functions defined in other files
+	//
+
+	// index
+	mux.HandleFunc("/", index)
+	// error
+	mux.HandleFunc("/err", err)
+
+	// defined in route_auth.go
+	mux.HandleFunc("/login", login)
+	mux.HandleFunc("/logout", logout)
+	mux.HandleFunc("/signup", signup)
+	mux.HandleFunc("/signup_account", signupAccount)
+	mux.HandleFunc("/authenticate", authenticate)
+	mux.HandleFunc("/user", update)
+	mux.HandleFunc("/user/update", updateUser)
+
+	// defined in route_thread.go
+	mux.HandleFunc("/thread/new", newThread)
+	mux.HandleFunc("/thread/create", createThread)
+	mux.HandleFunc("/thread/post", postThread)
+	mux.HandleFunc("/thread/read", readThread)
+	mux.HandleFunc("/thread/delete", deleteThread)
+
+	// starting up the server
+	server := &http.Server{
+		Addr:           config.Address,
+		Handler:        mux,
+		ReadTimeout:    time.Duration(config.ReadTimeout * int64(time.Second)),
+		WriteTimeout:   time.Duration(config.WriteTimeout * int64(time.Second)),
+		MaxHeaderBytes: 1 << 20,
+	}
+	server.ListenAndServe()
 }
