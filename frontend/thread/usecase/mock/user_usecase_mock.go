@@ -6,7 +6,7 @@ package mock_usecase
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	user "github.com/tsrnd/go-clean-arch/user"
+	user "github.com/tsrnd/goweb5/frontend/user"
 	reflect "reflect"
 )
 

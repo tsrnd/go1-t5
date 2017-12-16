@@ -2,9 +2,7 @@ package utils
 
 import (
 	"crypto/rand"
-	"errors"
 	"fmt"
-	"gwp/Chapter_2_Go_ChitChat/chitchat/data"
 	"html/template"
 	"log"
 	"net/http"
@@ -38,18 +36,6 @@ func init() {
 func Error_message(writer http.ResponseWriter, request *http.Request, msg string) {
 	url := []string{"/err?msg=", msg}
 	http.Redirect(writer, request, strings.Join(url, ""), 302)
-}
-
-// Checks if the user is logged in and has a session, if not err is not nil
-func Session(writer http.ResponseWriter, request *http.Request) (sess data.Session, err error) {
-	cookie, err := request.Cookie("_cookie")
-	if err == nil {
-		sess = data.Session{Uuid: cookie.Value}
-		if ok, _ := sess.Check(); !ok {
-			err = errors.New("Invalid session")
-		}
-	}
-	return
 }
 
 // parse HTML templates

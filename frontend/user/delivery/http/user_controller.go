@@ -2,10 +2,12 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"gwp/Chapter_2_Go_ChitChat/chitchat/data"
 	"net/http"
 
 	"github.com/tsrnd/goweb5/frontend/services/util"
+	"github.com/tsrnd/goweb5/frontend/user"
 
 	"github.com/go-chi/chi"
 	"github.com/tsrnd/goweb5/frontend/services/cache"
@@ -29,6 +31,7 @@ func NewUserController(r *chi.Mux, uc usecase.UserUsecase, c cache.Cache) *UserC
 	r.Get("/logout", handler.Logout)
 	r.Get("/login", handler.LoginPage)
 	r.Post("/login", handler.Login)
+	r.Get("/session", handler.Session)
 	return handler
 }
 func (ctrl *UserController) LoginPage(writer http.ResponseWriter, request *http.Request) {
@@ -131,4 +134,14 @@ func (ctrl *UserController) Login(writer http.ResponseWriter, request *http.Requ
 	} else {
 		http.Redirect(writer, request, "/login", 302)
 	}
+}
+func (ctrl *UserController) Session(writer http.ResponseWriter, request *http.Request) {
+	cookie, err := request.Cookie("_cookie")
+	if err == nil {
+		sess := user.Session{Uuid: cookie.Value}
+		if ok, _ := ctrl.Usecase.Check(sess); !ok {
+			err = errors.New("Invalid session")
+		}
+	}
+	return
 }

@@ -1,1 +1,1 @@
-### go-clean-arch
+### goweb5/frontend

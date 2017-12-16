@@ -2,27 +2,29 @@ package http
 
 import (
 	"fmt"
-	"gwp/Chapter_2_Go_ChitChat/chitchat/data"
 	"net/http"
 
 	"github.com/tsrnd/goweb5/frontend/services/util"
 
 	"github.com/go-chi/chi"
 	"github.com/tsrnd/goweb5/frontend/services/cache"
-	"github.com/tsrnd/goweb5/frontend/thread/usecase"
+	threadUC "github.com/tsrnd/goweb5/frontend/thread/usecase"
+	userUC "github.com/tsrnd/goweb5/frontend/user/usecase"
 )
 
 // ThreadController type
 type ThreadController struct {
-	Usecase usecase.ThreadUsecase
-	Cache   cache.Cache
+	ThreadUC threadUC.ThreadUsecase
+	UserUC   userUC.UserUsecase
+	Cache    cache.Cache
 }
 
 // NewThreadController func
-func NewThreadController(r *chi.Mux, uc usecase.ThreadUsecase, c cache.Cache) *ThreadController {
+func NewThreadController(r *chi.Mux, threadUC threadUC.ThreadUsecase, userUC userUC.UserUsecase, c cache.Cache) *ThreadController {
 	handler := &ThreadController{
-		Usecase: uc,
-		Cache:   c,
+		ThreadUC: threadUC,
+		UserUC:   userUC,
+		Cache:    c,
 	}
 	r.Get("/", handler.Index)
 	r.Get("/threads/{uuid}", handler.Show)
@@ -31,9 +33,9 @@ func NewThreadController(r *chi.Mux, uc usecase.ThreadUsecase, c cache.Cache) *T
 	r.Post("/threads/store", handler.Store)
 	return handler
 }
-
 func (this *ThreadController) StorePost(writer http.ResponseWriter, request *http.Request) {
-	sess, err := utils.Session(writer, request)
+	cookie, err := request.Cookie("_cookie")
+	sess, err := this.UserUC.SessionByCookie(cookie)
 	if err != nil {
 		http.Redirect(writer, request, "/login", 302)
 	} else {
@@ -41,17 +43,13 @@ func (this *ThreadController) StorePost(writer http.ResponseWriter, request *htt
 		if err != nil {
 			utils.Danger(err, "Cannot parse form")
 		}
-		user, err := sess.User()
-		if err != nil {
-			utils.Danger(err, "Cannot get user from session")
-		}
 		body := request.PostFormValue("body")
 		uuid := request.PostFormValue("uuid")
-		thread, err := data.ThreadByUUID(uuid)
+		thread, err := this.ThreadUC.ThreadByUUID(uuid)
 		if err != nil {
 			utils.Error_message(writer, request, "Cannot read thread")
 		}
-		if _, err := user.CreatePost(thread, body); err != nil {
+		if _, err := this.ThreadUC.CreatePost(sess.UserId, thread, body); err != nil {
 			utils.Danger(err, "Cannot create post")
 		}
 		url := fmt.Sprint("/threads/", uuid)
@@ -60,7 +58,8 @@ func (this *ThreadController) StorePost(writer http.ResponseWriter, request *htt
 }
 
 func (this *ThreadController) Store(writer http.ResponseWriter, request *http.Request) {
-	sess, err := utils.Session(writer, request)
+	cookie, err := request.Cookie("_cookie")
+	sess, err := this.UserUC.SessionByCookie(cookie)
 	if err != nil {
 		http.Redirect(writer, request, "/login", 302)
 	} else {
@@ -68,12 +67,8 @@ func (this *ThreadController) Store(writer http.ResponseWriter, request *http.Re
 		if err != nil {
 			utils.Danger(err, "Cannot parse form")
 		}
-		user, err := sess.User()
-		if err != nil {
-			utils.Danger(err, "Cannot get user from session")
-		}
 		topic := request.PostFormValue("topic")
-		if _, err := user.CreateThread(topic); err != nil {
+		if _, err := this.ThreadUC.CreateThread(sess.UserId, topic); err != nil {
 			utils.Danger(err, "Cannot create thread")
 		}
 		http.Redirect(writer, request, "/", 302)
@@ -81,7 +76,8 @@ func (this *ThreadController) Store(writer http.ResponseWriter, request *http.Re
 }
 
 func (this *ThreadController) Create(writer http.ResponseWriter, request *http.Request) {
-	_, err := utils.Session(writer, request)
+	cookie, err := request.Cookie("_cookie")
+	_, err = this.UserUC.SessionByCookie(cookie)
 	if err != nil {
 		http.Redirect(writer, request, "/login", 302)
 	} else {
@@ -90,16 +86,16 @@ func (this *ThreadController) Create(writer http.ResponseWriter, request *http.R
 }
 func (this *ThreadController) Show(writer http.ResponseWriter, request *http.Request) {
 	uuid := chi.URLParam(request, "uuid")
-	thread, err := this.Usecase.ThreadByUUID(uuid)
-	posts, err := this.Usecase.Posts(thread.Id)
+	thread, err := this.ThreadUC.ThreadByUUID(uuid)
+	posts, err := this.ThreadUC.Posts(thread.Id)
 	showPosts := make([]ShowPost, 0)
 	for _, post := range posts {
 		showPosts = append(showPosts, ShowPost{
 			Id:        post.Id,
 			Uuid:      post.Uuid,
 			Body:      post.Body,
-			User:      this.Usecase.User(post.UserId),
-			CreatedAt: this.Usecase.CreatedAtDate(post.CreatedAt),
+			User:      this.ThreadUC.User(post.UserId),
+			CreatedAt: this.ThreadUC.CreatedAtDate(post.CreatedAt),
 		})
 	}
 
@@ -107,16 +103,17 @@ func (this *ThreadController) Show(writer http.ResponseWriter, request *http.Req
 		Id:         thread.Id,
 		Uuid:       thread.Uuid,
 		Topic:      thread.Topic,
-		User:       this.Usecase.User(thread.UserId),
-		CreatedAt:  this.Usecase.CreatedAtDate(thread.CreatedAt),
-		NumReplies: this.Usecase.NumReplies(thread.Id),
+		User:       this.ThreadUC.User(thread.UserId),
+		CreatedAt:  this.ThreadUC.CreatedAtDate(thread.CreatedAt),
+		NumReplies: this.ThreadUC.NumReplies(thread.Id),
 		Posts:      showPosts,
 	}
 	fmt.Println(showThread.CreatedAt)
 	if err != nil {
 		utils.Error_message(writer, request, "Cannot read thread")
 	} else {
-		_, err := utils.Session(writer, request)
+		cookie, err := request.Cookie("_cookie")
+		_, err = this.UserUC.SessionByCookie(cookie)
 		if err != nil {
 			utils.GenerateHTML(writer, showThread, "layout", "public.navbar", "public.thread")
 		} else {
@@ -126,23 +123,23 @@ func (this *ThreadController) Show(writer http.ResponseWriter, request *http.Req
 }
 
 func (this *ThreadController) Index(writer http.ResponseWriter, request *http.Request) {
-	threads, err := this.Usecase.Threads()
+	threads, err := this.ThreadUC.Threads()
 	showThreads := make([]ShowThread, 0)
 	for _, thread := range threads {
 		showThreads = append(showThreads, ShowThread{
 			Id:         thread.Id,
 			Uuid:       thread.Uuid,
 			Topic:      thread.Topic,
-			User:       this.Usecase.User(thread.UserId),
-			CreatedAt:  this.Usecase.CreatedAtDate(thread.CreatedAt),
-			NumReplies: this.Usecase.NumReplies(thread.Id),
+			User:       this.ThreadUC.User(thread.UserId),
+			CreatedAt:  this.ThreadUC.CreatedAtDate(thread.CreatedAt),
+			NumReplies: this.ThreadUC.NumReplies(thread.Id),
 		})
 	}
-	fmt.Println(len(showThreads))
 	if err != nil {
 		utils.Error_message(writer, request, "Cannot get threads")
 	} else {
-		_, err := utils.Session(writer, request)
+		cookie, err := request.Cookie("_cookie")
+		_, err = this.UserUC.SessionByCookie(cookie)
 		if err != nil {
 			utils.GenerateHTML(writer, showThreads, "layout", "public.navbar", "index")
 		} else {

@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"net/http"
+
 	model "github.com/tsrnd/goweb5/frontend/user"
 	repos "github.com/tsrnd/goweb5/frontend/user/repository"
 )
@@ -8,7 +10,8 @@ import (
 // UserUsecase interface
 type UserUsecase interface {
 	CreateSession(email string, id int) (*model.Session, error)
-	Session(id int) (*model.Session, error)
+	SessionByID(id int) (*model.Session, error)
+	SessionByCookie(cookie *http.Cookie) (model.Session, error)
 	Check(session model.Session) (valid bool, err error)
 	DeleteByUUID(UUID string) (err error)
 	User(userID int) (*model.User, error)
@@ -30,8 +33,11 @@ func (a *userUsecase) CreateSession(email string, id int) (*model.Session, error
 	return a.userRepos.CreateSession(email, id)
 }
 
-func (a *userUsecase) Session(id int) (*model.Session, error) {
-	return a.userRepos.Session(id)
+func (a *userUsecase) SessionByID(id int) (*model.Session, error) {
+	return a.userRepos.SessionByID(id)
+}
+func (a *userUsecase) SessionByCookie(cookie *http.Cookie) (model.Session, error) {
+	return a.userRepos.SessionByCookie(cookie)
 }
 
 func (a *userUsecase) Check(session model.Session) (valid bool, err error) {

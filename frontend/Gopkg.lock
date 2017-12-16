@@ -33,12 +33,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/tsrnd/go-clean-arch"
-  packages = ["services/crypto","user"]
-  revision = "61d20d67d85807865fb259438cb71c71836c66e6"
-
-[[projects]]
-  branch = "master"
   name = "golang.org/x/crypto"
   packages = ["pbkdf2","scrypt"]
   revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
@@ -46,6 +40,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1ff8e6b32bdb5c991451ae474112c322dc1590347de8c88a28fc7c3bb9aee2f5"
+  inputs-digest = "21f85c4eeb60e2b14cf10f92d07c24fd4a2b9c43ada3cd54622e63d990538372"
   solver-name = "gps-cdcl"
   solver-version = 1
