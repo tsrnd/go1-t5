@@ -5,10 +5,7 @@
 package mock_repository
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
-	user "github.com/tsrnd/goweb5/frontend/user"
 )
 
 // MockUserRepository is a mock of UserRepository interface
@@ -32,56 +29,4 @@ func NewMockUserRepository(ctrl *gomock.Controller) *MockUserRepository {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 	return m.recorder
-}
-
-// GetByID mocks base method
-func (m *MockUserRepository) GetByID(id int) (*user.User, error) {
-	ret := m.ctrl.Call(m, "GetByID", id)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByID indicates an expected call of GetByID
-func (mr *MockUserRepositoryMockRecorder) GetByID(id interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockUserRepository)(nil).GetByID), id)
-}
-
-// GetByEmail mocks base method
-func (m *MockUserRepository) GetByEmail(email string) (*user.User, error) {
-	ret := m.ctrl.Call(m, "GetByEmail", email)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByEmail indicates an expected call of GetByEmail
-func (mr *MockUserRepositoryMockRecorder) GetByEmail(email interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockUserRepository)(nil).GetByEmail), email)
-}
-
-// GetPrivateDetailsByEmail mocks base method
-func (m *MockUserRepository) GetPrivateDetailsByEmail(email string) (*user.PrivateUserDetails, error) {
-	ret := m.ctrl.Call(m, "GetPrivateDetailsByEmail", email)
-	ret0, _ := ret[0].(*user.PrivateUserDetails)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPrivateDetailsByEmail indicates an expected call of GetPrivateDetailsByEmail
-func (mr *MockUserRepositoryMockRecorder) GetPrivateDetailsByEmail(email interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateDetailsByEmail", reflect.TypeOf((*MockUserRepository)(nil).GetPrivateDetailsByEmail), email)
-}
-
-// Create mocks base method
-func (m *MockUserRepository) Create(email, name, password string) (int, error) {
-	ret := m.ctrl.Call(m, "Create", email, name, password)
-	ret0, _ := ret[0].(int)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Create indicates an expected call of Create
-func (mr *MockUserRepositoryMockRecorder) Create(email, name, password interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserRepository)(nil).Create), email, name, password)
 }

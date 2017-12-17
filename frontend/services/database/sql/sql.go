@@ -3,6 +3,8 @@ package sql
 import (
 	"database/sql"
 	"fmt"
+
+	_ "github.com/lib/pq"
 )
 
 // Connect func

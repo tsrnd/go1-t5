@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -18,7 +17,6 @@ func main() {
 	router := config.Router(db, cache)
 	port := config.Port()
 	workDir, _ := os.Getwd()
-	fmt.Println(workDir)
 	filesDir := filepath.Join(workDir, "public")
 	FileServer(router, "/static/", http.Dir(filesDir))
 	if err := http.ListenAndServe(port, router); err != nil {

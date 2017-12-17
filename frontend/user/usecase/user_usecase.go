@@ -41,7 +41,7 @@ func (a *userUsecase) SessionByCookie(cookie *http.Cookie) (model.Session, error
 }
 
 func (a *userUsecase) Check(session model.Session) (valid bool, err error) {
-	return a.userRepos.Check(session)
+	return a.userRepos.Check(&session)
 }
 
 func (a *userUsecase) DeleteByUUID(UUID string) (err error) {

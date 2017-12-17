@@ -125,19 +125,19 @@ func (this *ThreadController) Show(writer http.ResponseWriter, request *http.Req
 func (this *ThreadController) Index(writer http.ResponseWriter, request *http.Request) {
 	threads, err := this.ThreadUC.Threads()
 	showThreads := make([]ShowThread, 0)
-	for _, thread := range threads {
-		showThreads = append(showThreads, ShowThread{
-			Id:         thread.Id,
-			Uuid:       thread.Uuid,
-			Topic:      thread.Topic,
-			User:       this.ThreadUC.User(thread.UserId),
-			CreatedAt:  this.ThreadUC.CreatedAtDate(thread.CreatedAt),
-			NumReplies: this.ThreadUC.NumReplies(thread.Id),
-		})
-	}
 	if err != nil {
 		utils.Error_message(writer, request, "Cannot get threads")
 	} else {
+		for _, thread := range threads {
+			showThreads = append(showThreads, ShowThread{
+				Id:         thread.Id,
+				Uuid:       thread.Uuid,
+				Topic:      thread.Topic,
+				User:       this.ThreadUC.User(thread.UserId),
+				CreatedAt:  this.ThreadUC.CreatedAtDate(thread.CreatedAt),
+				NumReplies: this.ThreadUC.NumReplies(thread.Id),
+			})
+		}
 		cookie, err := request.Cookie("_cookie")
 		_, err = this.UserUC.SessionByCookie(cookie)
 		if err != nil {

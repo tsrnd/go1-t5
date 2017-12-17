@@ -10,6 +10,8 @@ import (
 	"golang.org/x/crypto/scrypt"
 )
 
+const SALT string = "VUDANG"
+
 // GenerateSalt generates a random salt
 func GenerateSalt() string {
 	saltBytes := make([]byte, 16)

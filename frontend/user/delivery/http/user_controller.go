@@ -3,8 +3,10 @@ package http
 import (
 	"encoding/json"
 	"errors"
-	"gwp/Chapter_2_Go_ChitChat/chitchat/data"
+	"fmt"
 	"net/http"
+
+	"github.com/tsrnd/goweb5/frontend/services/crypto"
 
 	"github.com/tsrnd/goweb5/frontend/services/util"
 	"github.com/tsrnd/goweb5/frontend/user"
@@ -27,22 +29,43 @@ func NewUserController(r *chi.Mux, uc usecase.UserUsecase, c cache.Cache) *UserC
 		Cache:   c,
 	}
 	r.Get("/users", handler.GetAllUser)
-	r.Post("/users", handler.UserRegister)
+	r.Post("/users", handler.signupAccount)
 	r.Get("/logout", handler.Logout)
 	r.Get("/login", handler.LoginPage)
 	r.Post("/login", handler.Login)
 	r.Get("/session", handler.Session)
+	r.Get("/signup", handler.SignUp)
 	return handler
 }
-func (ctrl *UserController) LoginPage(writer http.ResponseWriter, request *http.Request) {
+
+// POST /signup
+// Create the user account
+func (this *UserController) signupAccount(writer http.ResponseWriter, request *http.Request) {
+	err := request.ParseForm()
+	if err != nil {
+		utils.Danger(err, "Cannot parse form")
+	}
+	if id, err := this.Usecase.Create(request.PostFormValue("name"), request.PostFormValue("email"), request.PostFormValue("password")); err != nil {
+		utils.Danger(err, "Cannot create user")
+	} else {
+		utils.Info(err, fmt.Sprint("Create user", id, "successful"))
+	}
+
+	http.Redirect(writer, request, "/login", 302)
+}
+func (this *UserController) SignUp(writer http.ResponseWriter, request *http.Request) {
+	utils.GenerateHTML(writer, nil, "login.layout", "public.navbar", "signup")
+}
+
+func (this *UserController) LoginPage(writer http.ResponseWriter, request *http.Request) {
 	t := utils.ParseTemplateFiles("login.layout", "public.navbar", "login")
 	t.Execute(writer, nil)
 }
-func (ctrl *UserController) Logout(writer http.ResponseWriter, request *http.Request) {
+func (this *UserController) Logout(writer http.ResponseWriter, request *http.Request) {
 	cookie, err := request.Cookie("_cookie")
 	if err != http.ErrNoCookie {
 		utils.Warning(err, "Failed to get cookie")
-		err1 := ctrl.Usecase.DeleteByUUID(cookie.Value)
+		err1 := this.Usecase.DeleteByUUID(cookie.Value)
 		if err1 != nil {
 			utils.Warning(err, "Logout fail")
 		}
@@ -50,11 +73,11 @@ func (ctrl *UserController) Logout(writer http.ResponseWriter, request *http.Req
 	http.Redirect(writer, request, "/", 302)
 }
 
-func (ctrl *UserController) GetAllUser(w http.ResponseWriter, r *http.Request) {
+func (this *UserController) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	p := map[string]string{
 		"token": "ss22",
 	}
-	users, err := ctrl.Usecase.Users()
+	users, err := this.Usecase.Users()
 	if err != nil {
 		json.NewEncoder(w).Encode(p)
 		return
@@ -63,64 +86,14 @@ func (ctrl *UserController) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-// UserRegister func
-func (ctrl *UserController) UserRegister(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-	err := r.ParseForm()
-	if err != nil {
-		utils.Danger(err, "Cannot parse form")
-	}
-	var id int
-	id, err = ctrl.Usecase.Create(r.PostFormValue("name"), r.PostFormValue("email"), r.PostFormValue("password"))
-	if err != nil {
-		utils.Danger(err, "Cannot create user")
-	}
-	utils.Info(id)
-	http.Redirect(w, r, "/login", 302)
-	// decoder := json.NewDecoder(r.Body)
-	// var rr requests.UserRegisterRequest
-	// err := decoder.Decode(&rr)
-	// if err != nil {
-	// 	http.Error(w, "Invalid request body", http.StatusBadRequest)
-	// 	return
-	// }
-	// id, err := repositories.CreateUser(ctrl.DB, rr.Email, rr.Name, rr.Password)
-	// if err != nil {
-	// 	log.Fatalf("Add user to database error: %s", err)
-	// 	http.Error(w, "", http.StatusInternalServerError)
-	// 	return
-	// }
-	// token, err := crypto.GenerateToken()
-	// if err != nil {
-	// 	log.Fatalf("Generate token Error: %s", err)
-	// 	http.Error(w, "", http.StatusInternalServerError)
-	// 	return
-	// }
-	// oneMonth := time.Duration(60*60*24*30) * time.Second
-	// err = ctrl.Cache.Set(fmt.Sprintf("token_%s", token), strconv.Itoa(id), oneMonth)
-	// if err != nil {
-	// 	log.Fatalf("Add token to redis Error: %s", err)
-	// 	http.Error(w, "", http.StatusInternalServerError)
-	// 	return
-	// }
-	// p := map[string]string{
-	// 	"token": token,
-	// }
-	// w.Header().Set("Content-Type", "application/json")
-	// json.NewEncoder(w).Encode(p)
-}
-
-func (ctrl *UserController) Login(writer http.ResponseWriter, request *http.Request) {
+func (this *UserController) Login(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
-	user, err := data.UserByEmail(request.PostFormValue("email"))
+	user, err := this.Usecase.UserByEmail(request.PostFormValue("email"))
 	if err != nil {
 		utils.Danger(err, "Cannot find user")
 	}
-	if user.Password == data.Encrypt(request.PostFormValue("password")) {
-		session, err := user.CreateSession()
+	if user.Password == crypto.HashPassword(request.PostFormValue("password"), crypto.SALT) {
+		session, err := this.Usecase.CreateSession(user.Email, user.Id)
 		if err != nil {
 			utils.Danger(err, "Cannot create session")
 		}
@@ -135,11 +108,11 @@ func (ctrl *UserController) Login(writer http.ResponseWriter, request *http.Requ
 		http.Redirect(writer, request, "/login", 302)
 	}
 }
-func (ctrl *UserController) Session(writer http.ResponseWriter, request *http.Request) {
+func (this *UserController) Session(writer http.ResponseWriter, request *http.Request) {
 	cookie, err := request.Cookie("_cookie")
 	if err == nil {
 		sess := user.Session{Uuid: cookie.Value}
-		if ok, _ := ctrl.Usecase.Check(sess); !ok {
+		if ok, _ := this.Usecase.Check(sess); !ok {
 			err = errors.New("Invalid session")
 		}
 	}

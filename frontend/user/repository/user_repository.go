@@ -11,7 +11,7 @@ type UserRepository interface {
 	CreateSession(email string, id int) (*model.Session, error)
 	SessionByID(id int) (*model.Session, error)
 	SessionByCookie(cookie *http.Cookie) (model.Session, error)
-	Check(session model.Session) (valid bool, err error)
+	Check(session *model.Session) (valid bool, err error)
 	DeleteByUUID(UUID string) (err error)
 	User(userID int) (*model.User, error)
 	SessionDeleteAll() (err error)

@@ -12,28 +12,27 @@ import (
 	"github.com/tsrnd/goweb5/frontend/user/repository"
 )
 
-const SALT string = "VUDANG"
-
 type userRepository struct {
 	DB *sql.DB
 }
 
-func (m *userRepository) CreateSession(email string, id int) (session *model.Session, err error) {
+func (m *userRepository) CreateSession(email string, id int) (*model.Session, error) {
 	const statement = `
   insert into sessions 
   (uuid, email, user_id, created_at) 
   values ($1, $2, $3, $4) 
   returning id, uuid, email, user_id, created_at
   `
-
+	var session = model.Session{}
+	var err error
 	stmt, err := m.DB.Prepare(statement)
 	if err != nil {
-		return
+		return &session, err
 	}
 	defer stmt.Close()
 	// use QueryRow to return a row and scan the returned id into the Session struct
 	err = stmt.QueryRow(utils.CreateUUID(), email, id, time.Now()).Scan(&session.Id, &session.Uuid, &session.Email, &session.UserId, &session.CreatedAt)
-	return
+	return &session, err
 }
 
 func (m *userRepository) SessionByID(id int) (*model.Session, error) {
@@ -42,15 +41,19 @@ func (m *userRepository) SessionByID(id int) (*model.Session, error) {
 		Scan(&session.Id, &session.Uuid, &session.Email, &session.UserId, &session.CreatedAt)
 	return &session, err
 }
-func (m *userRepository) SessionByCookie(cookie *http.Cookie) (model.Session, error) {
-	sess := model.Session{Uuid: cookie.Value}
-	var err error
-	if ok, _ := m.Check(sess); !ok {
+func (m *userRepository) SessionByCookie(cookie *http.Cookie) (sess model.Session, err error) {
+	if cookie == nil {
+		sess = model.Session{}
 		err = errors.New("Invalid session")
+	} else {
+		sess = model.Session{Uuid: cookie.Value}
+		if ok, _ := m.Check(&sess); !ok {
+			err = errors.New("Invalid session")
+		}
 	}
 	return sess, err
 }
-func (m *userRepository) Check(session model.Session) (valid bool, err error) {
+func (m *userRepository) Check(session *model.Session) (valid bool, err error) {
 	err = m.DB.QueryRow("SELECT id, uuid, email, user_id, created_at FROM sessions WHERE uuid = $1", session.Uuid).
 		Scan(&session.Id, &session.Uuid, &session.Email, &session.UserId, &session.CreatedAt)
 	if err != nil {
@@ -99,7 +102,7 @@ func (m *userRepository) Create(name string, email string, password string) (int
 	defer stmt.Close()
 	var id int
 	// use QueryRow to return a row and scan the returned id into the User struct
-	err = stmt.QueryRow(utils.CreateUUID(), name, email, crypto.HashPassword(password, SALT), time.Now()).Scan(&id)
+	err = stmt.QueryRow(utils.CreateUUID(), name, email, crypto.HashPassword(password, crypto.SALT), time.Now()).Scan(&id)
 	return id, err
 }
 

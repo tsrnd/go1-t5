@@ -1,2 +1,6 @@
 WARNING 2017/12/15 15:03:33 utils.go:91: <nil> Failed to get cookie
 ERROR 2017/12/15 15:07:32 utils.go:86: sql: no rows in result set Cannot find user
+INFO 2017/12/17 20:55:09 utils.go:68: <nil> Create user1successful
+WARNING 2017/12/17 21:13:54 utils.go:78: <nil> Failed to get cookie
+ERROR 2017/12/17 21:14:11 utils.go:73: pq: insert or update on table "threads" violates foreign key constraint "threads_user_id_fkey" Cannot create thread
+ERROR 2017/12/17 21:14:28 utils.go:73: pq: insert or update on table "threads" violates foreign key constraint "threads_user_id_fkey" Cannot create thread
