@@ -62,8 +62,8 @@ func (a *userUsecase) Create(name string, email string, password string) (int, e
 func (a *userUsecase) Delete(id int) (err error) {
 	return a.userRepos.Delete(id)
 }
-func (a *userUsecase) Update(id int, name string, email string) (err error) {
-	return a.userRepos.Update(id, name, email)
+func (a *userUsecase) Update(id int, name string, password string) (err error) {
+	return a.userRepos.Update(id, name, password)
 }
 
 func (a *userUsecase) UserDeleteAll() (err error) {

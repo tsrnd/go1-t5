@@ -28,6 +28,8 @@ func NewUserController(r *chi.Mux, uc usecase.UserUsecase, c cache.Cache) *UserC
 		Usecase: uc,
 		Cache:   c,
 	}
+	r.Get("/user", handler.Update)
+	r.Post("/user/update", handler.UpdateUser)
 	r.Get("/users", handler.GetAllUser)
 	r.Post("/users", handler.signupAccount)
 	r.Get("/logout", handler.Logout)
@@ -50,7 +52,6 @@ func (this *UserController) signupAccount(writer http.ResponseWriter, request *h
 	} else {
 		utils.Info(err, fmt.Sprint("Create user", id, "successful"))
 	}
-
 	http.Redirect(writer, request, "/login", 302)
 }
 func (this *UserController) SignUp(writer http.ResponseWriter, request *http.Request) {
@@ -61,6 +62,46 @@ func (this *UserController) LoginPage(writer http.ResponseWriter, request *http.
 	t := utils.ParseTemplateFiles("login.layout", "public.navbar", "login")
 	t.Execute(writer, nil)
 }
+
+func (this *UserController) UpdateUser(writer http.ResponseWriter, request *http.Request) {
+	err := request.ParseForm()
+	if err != nil {
+		utils.Danger(err, "Cannot pasre form")
+	}
+	cookie, err := request.Cookie("_cookie")
+	sess, err := this.Usecase.SessionByCookie(cookie)
+	if err != nil {
+		http.Redirect(writer, request, "/login", 302)
+	}
+	user, _ := this.Usecase.User(sess.UserId)
+	user.Name = request.FormValue("name")
+	if request.FormValue("password") == "" {
+		err = this.Usecase.Update(user.Id, user.Name, user.Password)
+		if err != nil {
+			fmt.Println("Failed update user")
+		}
+		http.Redirect(writer, request, "/", 302)
+	} else {
+		user.Password = crypto.HashPassword(request.FormValue("password"), crypto.SALT)
+		err = this.Usecase.Update(user.Id, user.Name, user.Password)
+		if err != nil {
+			fmt.Println("Failed update user")
+		}
+		http.Redirect(writer, request, "/", 302)
+	}
+}
+
+func (this *UserController) Update(writer http.ResponseWriter, request *http.Request) {
+	cookie, err := request.Cookie("_cookie")
+	sess, err := this.Usecase.SessionByCookie(cookie)
+	user, _ := this.Usecase.User(sess.UserId)
+	if err != nil {
+		http.Redirect(writer, request, "/login", 302)
+	} else {
+		utils.GenerateHTML(writer, user, "layout", "private.navbar", "update.user")
+	}
+}
+
 func (this *UserController) Logout(writer http.ResponseWriter, request *http.Request) {
 	cookie, err := request.Cookie("_cookie")
 	if err != http.ErrNoCookie {
