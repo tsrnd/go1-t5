@@ -1,28 +1,43 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi"
+	"github.com/tsrnd/goweb5/frontend/config"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	setCors(w)
-	fmt.Fprintf(w, "Goweb5. This is the frontend system")
-}
-
-func setCors(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5001")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-}
-
 func main() {
+	db := config.DB()
+	cache := config.Cache()
+	router := config.Router(db, cache)
+	port := config.Port()
+	workDir, _ := os.Getwd()
+	filesDir := filepath.Join(workDir, "public")
+	FileServer(router, "/static/", http.Dir(filesDir))
+	if err := http.ListenAndServe(port, router); err != nil {
+		log.Fatal(err)
+	}
+}
 
-	// add router and routes
-	router := httprouter.New()
-	router.GET("/", indexHandler)
+func FileServer(r chi.Router, path string, root http.FileSystem) {
+	if strings.ContainsAny(path, "{}*") {
+		panic("FileServer does not permit URL parameters.")
+	}
 
-	http.ListenAndServe(":8082", router)
+	fs := http.StripPrefix(path, http.FileServer(root))
+
+	if path != "/" && path[len(path)-1] != '/' {
+		r.Get(path, http.RedirectHandler(path+"/", 301).ServeHTTP)
+		path += "/"
+	}
+	path += "*"
+
+	r.Get(path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fs.ServeHTTP(w, r)
+	}))
 }
