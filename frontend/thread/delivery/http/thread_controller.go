@@ -108,7 +108,6 @@ func (this *ThreadController) Show(writer http.ResponseWriter, request *http.Req
 		NumReplies: this.ThreadUC.NumReplies(thread.Id),
 		Posts:      showPosts,
 	}
-	fmt.Println(showThread.CreatedAt)
 	if err != nil {
 		utils.Error_message(writer, request, "Cannot read thread")
 	} else {

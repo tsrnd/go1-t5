@@ -10,7 +10,10 @@
   </div>
   {{ range .Posts }}
   <div class="panel-body">
-    <span class="lead"> <i class="fa fa-comment"></i> {{ .Body }}</span>
+    <img src="/{{ .User.Avatar }}" width="50" height="50">
+    <span class="lead"> 
+      <!-- <i class="fa fa-comment"></i> -->
+       {{ .Body }}</span>
     <div class="pull-right">
       {{ .User.Name }} - {{ .CreatedAt }}
     </div>    

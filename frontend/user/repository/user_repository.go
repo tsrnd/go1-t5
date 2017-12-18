@@ -15,7 +15,7 @@ type UserRepository interface {
 	DeleteByUUID(UUID string) (err error)
 	User(userID int) (*model.User, error)
 	SessionDeleteAll() (err error)
-	Create(name string, email string, password string) (int, error)
+	Create(name string, email string, password string, image string) (int, error)
 	Delete(id int) (err error)
 	Update(id int, name string, email string) (err error)
 	UserDeleteAll() (err error)

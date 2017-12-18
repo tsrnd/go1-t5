@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/tsrnd/goweb5/frontend/services/crypto"
 
@@ -42,10 +43,22 @@ func NewUserController(r *chi.Mux, uc usecase.UserUsecase, c cache.Cache) *UserC
 // Create the user account
 func (this *UserController) signupAccount(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
+	//err := request.ParseMultipartForm(1024)
 	if err != nil {
 		utils.Danger(err, "Cannot parse form")
 	}
-	if id, err := this.Usecase.Create(request.PostFormValue("name"), request.PostFormValue("email"), request.PostFormValue("password")); err != nil {
+	var imageURL = strings.Join([]string{user.IMG_BASE_URL, "avatar.png"}, "/")
+	//get image from form file request
+	file, header, err := request.FormFile("avatar")
+	if err == nil {
+		fileName, _, err := utils.HandleImage(file, header, user.IMG_BASE_URL)
+		if err != nil {
+			http.Redirect(writer, request, "/signup", http.StatusBadRequest)
+			return
+		}
+		imageURL = strings.Join([]string{user.IMG_PUBLIC_URL, fileName + ".jpg"}, "/")
+	}
+	if id, err := this.Usecase.Create(request.PostFormValue("name"), request.PostFormValue("email"), request.PostFormValue("password"), imageURL); err != nil {
 		utils.Danger(err, "Cannot create user")
 	} else {
 		utils.Info(err, fmt.Sprint("Create user", id, "successful"))
