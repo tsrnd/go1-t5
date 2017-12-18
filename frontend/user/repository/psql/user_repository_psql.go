@@ -79,8 +79,8 @@ func (m *userRepository) DeleteByUUID(UUID string) (err error) {
 
 func (m *userRepository) User(userID int) (*model.User, error) {
 	user := model.User{}
-	err := m.DB.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", userID).
-		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.CreatedAt)
+	err := m.DB.QueryRow("SELECT id, uuid, name, password, email, created_at FROM users WHERE id = $1", userID).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Password, &user.Email, &user.CreatedAt)
 	return &user, err
 }
 
@@ -118,15 +118,15 @@ func (m *userRepository) Delete(id int) error {
 	return err
 }
 
-func (m *userRepository) Update(id int, name string, email string) error {
-	statement := "update users set name = $2, email = $3 where id = $1"
+func (m *userRepository) Update(id int, name string, password string) error {
+	statement := "update users set name = $2, password = $3 where id = $1"
 	stmt, err := m.DB.Prepare(statement)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(id, name, email)
+	_, err = stmt.Exec(id, name, password)
 	return err
 }
 
