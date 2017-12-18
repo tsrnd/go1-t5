@@ -97,8 +97,8 @@ func (this *threadRepository) ThreadByUUID(uuid string) (conv Thread, err error)
 
 func (this *threadRepository) User(id int) *user.User {
 	user := user.User{}
-	this.DB.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", id).
-		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.CreatedAt)
+	this.DB.QueryRow("SELECT id, uuid, name, email,avatar, created_at FROM users WHERE id = $1", id).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Avatar, &user.CreatedAt)
 	return &user
 }
 

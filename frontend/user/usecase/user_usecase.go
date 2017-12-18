@@ -16,7 +16,7 @@ type UserUsecase interface {
 	DeleteByUUID(UUID string) (err error)
 	User(userID int) (*model.User, error)
 	SessionDeleteAll() (err error)
-	Create(name string, email string, password string) (int, error)
+	Create(name string, email string, password string, image string) (int, error)
 	Delete(id int) (err error)
 	Update(id int, name string, email string) (err error)
 	UserDeleteAll() (err error)
@@ -56,8 +56,8 @@ func (a *userUsecase) SessionDeleteAll() (err error) {
 	return a.userRepos.SessionDeleteAll()
 }
 
-func (a *userUsecase) Create(name string, email string, password string) (int, error) {
-	return a.userRepos.Create(name, email, password)
+func (a *userUsecase) Create(name string, email string, password string, image string) (int, error) {
+	return a.userRepos.Create(name, email, password, image)
 }
 func (a *userUsecase) Delete(id int) (err error) {
 	return a.userRepos.Delete(id)

@@ -79,8 +79,8 @@ func (m *userRepository) DeleteByUUID(UUID string) (err error) {
 
 func (m *userRepository) User(userID int) (*model.User, error) {
 	user := model.User{}
-	err := m.DB.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", userID).
-		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.CreatedAt)
+	err := m.DB.QueryRow("SELECT id, uuid, name, email, avatar, created_at FROM users WHERE id = $1", userID).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Avatar, &user.CreatedAt)
 	return &user, err
 }
 
@@ -90,11 +90,11 @@ func (m *userRepository) SessionDeleteAll() (err error) {
 	return
 }
 
-func (m *userRepository) Create(name string, email string, password string) (int, error) {
+func (m *userRepository) Create(name string, email string, password string, image string) (int, error) {
 	// Postgres does not automatically return the last insert id, because it would be wrong to assume
 	// you're always using a sequence.You need to use the RETURNING keyword in your insert to get this
 	// information from postgres.
-	statement := "insert into users (uuid, name, email, password, created_at) values ($1, $2, $3, $4, $5) returning id"
+	statement := "insert into users (uuid, name, email, password, avatar, created_at) values ($1, $2, $3, $4, $5, $6) returning id"
 	stmt, err := m.DB.Prepare(statement)
 	if err != nil {
 		return 0, err
@@ -102,7 +102,7 @@ func (m *userRepository) Create(name string, email string, password string) (int
 	defer stmt.Close()
 	var id int
 	// use QueryRow to return a row and scan the returned id into the User struct
-	err = stmt.QueryRow(utils.CreateUUID(), name, email, crypto.HashPassword(password, crypto.SALT), time.Now()).Scan(&id)
+	err = stmt.QueryRow(utils.CreateUUID(), name, email, crypto.HashPassword(password, crypto.SALT), image, time.Now()).Scan(&id)
 	return id, err
 }
 
@@ -137,13 +137,13 @@ func (m *userRepository) UserDeleteAll() (err error) {
 }
 
 func (m *userRepository) Users() (users []model.User, err error) {
-	rows, err := m.DB.Query("SELECT id, uuid, name, email, password, created_at FROM users")
+	rows, err := m.DB.Query("SELECT id, uuid, name, email, password,avatar, created_at FROM users")
 	if err != nil {
 		return
 	}
 	for rows.Next() {
 		user := model.User{}
-		if err = rows.Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.CreatedAt); err != nil {
+		if err = rows.Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.Avatar, &user.CreatedAt); err != nil {
 			return
 		}
 		users = append(users, user)
@@ -155,16 +155,16 @@ func (m *userRepository) Users() (users []model.User, err error) {
 // Get a single user given the email
 func (m *userRepository) UserByEmail(email string) (*model.User, error) {
 	user := model.User{}
-	err := m.DB.QueryRow("SELECT id, uuid, name, email, password, created_at FROM users WHERE email = $1", email).
-		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
+	err := m.DB.QueryRow("SELECT id, uuid, name, email, password, avatar, created_at FROM users WHERE email = $1", email).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.Avatar, &user.CreatedAt)
 	return &user, err
 }
 
 // Get a single user given the UUID
 func (m *userRepository) UserByUUID(uuid string) (*model.User, error) {
 	user := model.User{}
-	err := m.DB.QueryRow("SELECT id, uuid, name, email, password, created_at FROM users WHERE uuid = $1", uuid).
-		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
+	err := m.DB.QueryRow("SELECT id, uuid, name, email, password, avatar, created_at FROM users WHERE uuid = $1", uuid).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.Avatar, &user.CreatedAt)
 	return &user, err
 }
 
