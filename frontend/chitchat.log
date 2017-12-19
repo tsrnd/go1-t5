@@ -4,3 +4,39 @@ INFO 2017/12/17 20:55:09 utils.go:68: <nil> Create user1successful
 WARNING 2017/12/17 21:13:54 utils.go:78: <nil> Failed to get cookie
 ERROR 2017/12/17 21:14:11 utils.go:73: pq: insert or update on table "threads" violates foreign key constraint "threads_user_id_fkey" Cannot create thread
 ERROR 2017/12/17 21:14:28 utils.go:73: pq: insert or update on table "threads" violates foreign key constraint "threads_user_id_fkey" Cannot create thread
+ERROR 2017/12/19 10:08:11 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:08:12 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+WARNING 2017/12/19 10:08:23 utils.go:78: <nil> Failed to get cookie
+INFO 2017/12/19 10:08:47 utils.go:68: <nil> Create user6successful
+WARNING 2017/12/19 10:08:59 utils.go:78: <nil> Failed to get cookie
+ERROR 2017/12/19 10:09:05 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+WARNING 2017/12/19 10:09:26 utils.go:78: <nil> Failed to get cookie
+WARNING 2017/12/19 10:10:46 utils.go:78: <nil> Failed to get cookie
+WARNING 2017/12/19 10:11:14 utils.go:78: <nil> Failed to get cookie
+ERROR 2017/12/19 10:11:20 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:11:20 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:11:21 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:11:21 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:11:21 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:11:22 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:11:22 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:11:22 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:11:46 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:11:46 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:11:46 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:11:47 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:12:07 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+WARNING 2017/12/19 10:12:08 utils.go:78: <nil> Failed to get cookie
+WARNING 2017/12/19 10:13:42 utils.go:78: <nil> Failed to get cookie
+WARNING 2017/12/19 10:14:13 utils.go:78: <nil> Failed to get cookie
+WARNING 2017/12/19 10:15:00 utils.go:78: <nil> Failed to get cookie
+ERROR 2017/12/19 10:15:06 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:15:06 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:15:06 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:15:06 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:15:06 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:15:06 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:15:07 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:15:07 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:15:08 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!
+ERROR 2017/12/19 10:15:08 utils.go:73: <nil> Fobidden! You can't delete a thread of another user!

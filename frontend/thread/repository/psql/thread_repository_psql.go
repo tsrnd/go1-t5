@@ -1,6 +1,7 @@
 package psql
 
 import (
+	"fmt"
 	"database/sql"
 	"time"
 
@@ -95,11 +96,27 @@ func (this *threadRepository) ThreadByUUID(uuid string) (conv Thread, err error)
 	return
 }
 
+func (this *threadRepository) ThreadByID(id string) (conv Thread, err error) {
+	conv = Thread{}
+	err = this.DB.QueryRow("SELECT id, uuid, topic, user_id, created_at FROM threads WHERE id = $1", id).
+		Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId, &conv.CreatedAt)
+	return
+}
+
 func (this *threadRepository) User(id int) *user.User {
 	user := user.User{}
 	this.DB.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", id).
 		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.CreatedAt)
 	return &user
+}
+
+func (this *threadRepository) DeleteThread(id string) (error){
+	_,err := this.DB.Query("Delete from threads where id = $1", id)
+	if err != nil {
+		fmt.Println("Error when delete thread!")
+	}
+	_,err = this.DB.Query("Delete from posts where thread_id = $1", id)
+	return err
 }
 
 func NewThreadRepository(db *sql.DB) repository.ThreadRepository {
