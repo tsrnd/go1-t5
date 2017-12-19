@@ -18,6 +18,7 @@ type ThreadUsecase interface {
 	Threads() (threads []Thread, err error)
 	ThreadByUUID(uuid string) (conv Thread, err error)
 	User(id int) *user.User
+	DeletePost(id int) (err error)
 }
 
 type threadUsecase struct {
@@ -48,6 +49,10 @@ func (this *threadUsecase) ThreadByUUID(uuid string) (conv Thread, err error) {
 }
 func (this *threadUsecase) User(id int) *user.User {
 	return this.threadRepos.User(id)
+}
+
+func (this *threadUsecase) DeletePost(id int) (err error) {
+	return this.threadRepos.DeletePost(id)
 }
 
 // NewThreadUsecase func

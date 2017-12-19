@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/tsrnd/goweb5/frontend/services/util"
 
@@ -31,6 +32,7 @@ func NewThreadController(r *chi.Mux, threadUC threadUC.ThreadUsecase, userUC use
 	r.Post("/threads/posts", handler.StorePost)
 	r.Get("/threads/create", handler.Create)
 	r.Post("/threads/store", handler.Store)
+	r.Post("/posts/delete", handler.DeletePost)
 	return handler
 }
 func (this *ThreadController) StorePost(writer http.ResponseWriter, request *http.Request) {
@@ -146,4 +148,23 @@ func (this *ThreadController) Index(writer http.ResponseWriter, request *http.Re
 			utils.GenerateHTML(writer, showThreads, "layout", "private.navbar", "index")
 		}
 	}
+}
+
+func (this *ThreadController) DeletePost(writer http.ResponseWriter, request *http.Request) {
+	cookie, err := request.Cookie("_cookie")
+	_, err = this.UserUC.SessionByCookie(cookie)
+	if err != nil {
+		http.Redirect(writer, request, "/login", 302)
+	}
+	err = request.ParseForm()
+	if err != nil {
+		utils.Danger(err, "Cannot pasre form")
+	}
+	post := request.PostFormValue("delPost")
+	fmt.Println(post)
+	idPost, _ := strconv.Atoi(post)
+	if err := this.ThreadUC.DeletePost(idPost); err != nil {
+		utils.Danger(err, "Cannot delete post")
+	}
+	http.Redirect(writer, request, "/", 302)
 }

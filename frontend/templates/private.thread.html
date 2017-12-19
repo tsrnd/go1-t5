@@ -10,6 +10,10 @@
   {{ range .Posts }}
   <div class="panel-body">
     <span class="lead"> <i class="fa fa-comment"></i> {{ .Body }}</span>
+    <form action="/posts/delete"  method="POST">
+      <input type="hidden" name="delPost" value="{{ .Id }}">
+      <button class="fa fa-times pull-right" type="submit" onclick="return confirm('Are you sure you want to delete?');"></button>
+    </form>
     <div class="pull-right">
       {{ .User.Name }} - {{ .CreatedAt }}
     </div>    
