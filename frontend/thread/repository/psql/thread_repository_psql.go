@@ -105,3 +105,18 @@ func (this *threadRepository) User(id int) *user.User {
 func NewThreadRepository(db *sql.DB) repository.ThreadRepository {
 	return &threadRepository{db}
 }
+
+//Delete post
+func (this *threadRepository) DeletePost(id int) (err error) {
+	statement := "delete from posts where id = $1"
+	stmt, err := this.DB.Prepare(statement)
+	if err != nil {
+		return
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return
+	}
+	return
+}

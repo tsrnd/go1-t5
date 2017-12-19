@@ -17,4 +17,5 @@ type ThreadRepository interface {
 	Threads() (threads []Thread, err error)
 	ThreadByUUID(uuid string) (conv Thread, err error)
 	User(id int) *user.User
+	DeletePost(id int) (err error)
 }

@@ -87,7 +87,7 @@ func (this *UserController) UpdateUser(writer http.ResponseWriter, request *http
 		if err != nil {
 			fmt.Println("Failed update user")
 		}
-		http.Redirect(writer, request, "/", 302)
+		http.Redirect(writer, request, "/logout", 302)
 	}
 }
 
