@@ -1,0 +1,53 @@
+{{ define "content" }}
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-10 toppad cls-tb-user" >
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title text-center"></h3>
+                </div>
+                <div class="panel-body">
+                    <form  action="/update" method="POST" class="form-horizontal">
+                        <input type="hidden" name="_method" value="PUT">
+                        <div class="form-group cls-ml">
+                            <label class="control-label col-md-3 pull-left">Name</label>
+                            <div class="col-md-8">
+                                <input type="text" name="name" class="form-control" value="{{.User.Name}}">
+                            </div>
+                        </div>
+                        <div class="form-group cls-ml">
+                            <label class="control-label col-md-3 pull-left">Email</label>
+                            <div class="col-md-8">
+                                <input type="text" name="email" class="form-control" value="{{.User.Email}}" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group cls-ml">
+                            <label class="control-label col-md-3 pull-left">Password</label>
+                            <div class="col-md-8">
+                                <input type="password" name="password" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group cls-ml">
+                            <label class="control-label col-md-3 pull-left">Password Confirm</label>
+                            <div class="col-md-8">
+                                <input type="password" name="password_confirmation" class="form-control">
+                            </div>
+                        </div>
+                        <div class ="panel-footer clearfix cls-updateuser">
+                            <button type ="submit" class="btn btn-success btn-xs pull-right">
+                                Submit
+                            </button>
+                            <a href="/" class="btn btn-default btn-xs pull-left">
+                                Back
+                            </a>
+                            <button class="btn btn-warning btn-xs pull-left" type="reset">
+                                Reset
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>    
+{{ end }}
